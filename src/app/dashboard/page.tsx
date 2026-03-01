@@ -105,9 +105,6 @@ export default function DashboardPage() {
                                     {classIcons[index % classIcons.length]}
                                 </div>
                                 <h3 className="font-bold text-slate-800 text-sm">{cls.name}</h3>
-                                <p className="text-xs text-slate-400 mt-1 truncate">
-                                    {cls.teacher_name}
-                                </p>
                             </button>
                         ))}
                     </div>

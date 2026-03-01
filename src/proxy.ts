@@ -13,6 +13,7 @@ export async function proxy(request: NextRequest) {
     const isProtected = protectedPaths.some((path) =>
         pathname.startsWith(path)
     );
+    const isManagePath = pathname.startsWith('/admin/manage');
 
     if (!isProtected) {
         return NextResponse.next();
@@ -25,7 +26,11 @@ export async function proxy(request: NextRequest) {
     }
 
     try {
-        await jwtVerify(token, encodedKey, { algorithms: ['HS256'] });
+        const { payload } = await jwtVerify(token, encodedKey, { algorithms: ['HS256'] });
+
+        if (isManagePath && payload.role !== 'admin') {
+            return NextResponse.redirect(new URL('/admin', request.url));
+        }
 
         return NextResponse.next();
     } catch {

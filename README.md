@@ -120,6 +120,8 @@ curl -X POST http://localhost:3000/api/auth/login \
 Note:
 - Only `admin` can create class and add student.
 - Seed default admin is `budi@sekolah.id`.
+- Attendance recap page (`/admin`) can be accessed by all logged-in users.
+- Class/student management page is `/admin/manage` (admin only).
 
 ### Example: Save Attendance
 
@@ -186,3 +188,6 @@ public/
 ## License
 
 MIT
+
+
+
