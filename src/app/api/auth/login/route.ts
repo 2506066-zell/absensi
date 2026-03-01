@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { createSession } from '@/features/auth/session';
 import { validateEmail, validateName, sanitizeString } from '@/lib/validation';
+import { DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_NAME } from '@/config';
 import { Teacher, ApiResponse } from '@/types';
 
 export async function POST(request: Request) {
@@ -33,6 +34,8 @@ export async function POST(request: Request) {
             );
         }
 
+        const isDefaultAdmin = cleanEmail === DEFAULT_ADMIN_EMAIL;
+
         // Look up or create teacher
         let teachers = await query<Teacher>(
             'SELECT * FROM teachers WHERE email = $1',
@@ -41,12 +44,27 @@ export async function POST(request: Request) {
 
         if (teachers.length === 0) {
             teachers = await query<Teacher>(
-                'INSERT INTO teachers (name, email) VALUES ($1, $2) RETURNING *',
-                [cleanName, cleanEmail]
+                'INSERT INTO teachers (name, email, role) VALUES ($1, $2, $3) RETURNING *',
+                [isDefaultAdmin ? DEFAULT_ADMIN_NAME : cleanName, cleanEmail, isDefaultAdmin ? 'admin' : 'user']
             );
         }
 
-        const teacher = teachers[0];
+        let teacher = teachers[0];
+
+        // Keep only the default admin credentials as admin.
+        if (isDefaultAdmin && (teacher.role !== 'admin' || teacher.name !== DEFAULT_ADMIN_NAME)) {
+            const updated = await query<Teacher>(
+                'UPDATE teachers SET name = $1, role = $2 WHERE id = $3 RETURNING *',
+                [DEFAULT_ADMIN_NAME, 'admin', teacher.id]
+            );
+            teacher = updated[0];
+        } else if (!isDefaultAdmin && teacher.role === 'admin') {
+            const updated = await query<Teacher>(
+                'UPDATE teachers SET role = $1 WHERE id = $2 RETURNING *',
+                ['user', teacher.id]
+            );
+            teacher = updated[0];
+        }
 
         // Create session
         await createSession({

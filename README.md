@@ -114,12 +114,12 @@ Visit `http://localhost:3000`
 ```bash
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"name": "Budi Santoso", "email": "budi@sekolah.id"}'
+  -d '{"name": "Admin", "email": "admin@smktarkid.id"}'
 ```
 
 Note:
 - Only `admin` can create class and add student.
-- Seed default admin is `budi@sekolah.id`.
+- Seed default admin is `admin@smktarkid.id` (name: `Admin`).
 - Attendance recap page (`/admin`) can be accessed by all logged-in users.
 - Class/student management page is `/admin/manage` (admin only).
 

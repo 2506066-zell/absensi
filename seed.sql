@@ -3,7 +3,8 @@
 
 -- Teachers
 INSERT INTO teachers (name, email, role) VALUES
-  ('Budi Santoso', 'budi@sekolah.id', 'admin'),
+  ('Admin', 'admin@smktarkid.id', 'admin'),
+  ('Budi Santoso', 'budi@sekolah.id', 'user'),
   ('Siti Rahayu', 'siti@sekolah.id', 'user'),
   ('Ahmad Hidayat', 'ahmad@sekolah.id', 'user')
 ON CONFLICT (email) DO NOTHING;

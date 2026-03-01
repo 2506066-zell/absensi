@@ -49,3 +49,6 @@ export const STATUS_COLORS: Record<AttendanceStatus, string> = {
 
 export const COOKIE_NAME = 'absensi_session';
 export const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+
+export const DEFAULT_ADMIN_EMAIL = 'admin@smktarkid.id';
+export const DEFAULT_ADMIN_NAME = 'Admin';
