@@ -17,6 +17,6 @@ export async function query<T>(
     if (!db) {
         throw new Error('DATABASE_URL environment variable is not set');
     }
-    const result = await (db as any)(queryText, params);
+    const result = await (db as any).query(queryText, params);
     return result as T[];
 }
