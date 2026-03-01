@@ -331,7 +331,7 @@ export default function AdminPage() {
                 ) : (
                     <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
                         <p className="text-sm text-amber-700 font-medium">
-                            Halaman ini hanya untuk admin.
+                            Manajemen kelas dan siswa hanya untuk admin. Rekap absensi tetap bisa dilihat.
                         </p>
                     </div>
                 )}
