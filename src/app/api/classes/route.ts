@@ -35,6 +35,12 @@ export async function POST(request: Request) {
                 { status: 401 }
             );
         }
+        if (session.role !== 'admin') {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Admin only action' },
+                { status: 403 }
+            );
+        }
 
         const body = await request.json();
         const { name } = body as { name?: string };
@@ -66,7 +72,7 @@ export async function POST(request: Request) {
         }
 
         const teacher = await query<Teacher>(
-            'SELECT id, name, email, created_at FROM teachers WHERE id = $1 LIMIT 1',
+            'SELECT id, name, email, role, created_at FROM teachers WHERE id = $1 LIMIT 1',
             [session.id]
         );
         if (teacher.length === 0) {

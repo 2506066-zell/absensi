@@ -2,10 +2,10 @@
 -- Run after schema.sql
 
 -- Teachers
-INSERT INTO teachers (name, email) VALUES
-  ('Budi Santoso', 'budi@sekolah.id'),
-  ('Siti Rahayu', 'siti@sekolah.id'),
-  ('Ahmad Hidayat', 'ahmad@sekolah.id')
+INSERT INTO teachers (name, email, role) VALUES
+  ('Budi Santoso', 'budi@sekolah.id', 'admin'),
+  ('Siti Rahayu', 'siti@sekolah.id', 'user'),
+  ('Ahmad Hidayat', 'ahmad@sekolah.id', 'user')
 ON CONFLICT (email) DO NOTHING;
 
 -- Classes

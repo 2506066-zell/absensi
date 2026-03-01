@@ -4,7 +4,7 @@ A mobile-first Progressive Web App for teacher-driven student attendance trackin
 
 ## Features
 
-- **Teacher Auth** — Login with name + email, JWT session via HTTP-only cookies
+- **Role-based Auth** — Login with name + email, JWT session via HTTP-only cookies (`admin` / `user`)
 - **Class Selection** — Grid-based class selection dashboard
 - **Attendance Marking** — Mark students as Hadir/Izin/Sakit/Alpha with one-tap buttons
 - **Bulk Save** — Save all attendance records in a single request
@@ -116,6 +116,10 @@ curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"name": "Budi Santoso", "email": "budi@sekolah.id"}'
 ```
+
+Note:
+- Only `admin` can create class and add student.
+- Seed default admin is `budi@sekolah.id`.
 
 ### Example: Save Attendance
 

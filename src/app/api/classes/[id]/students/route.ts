@@ -56,6 +56,12 @@ export async function POST(
                 { status: 401 }
             );
         }
+        if (session.role !== 'admin') {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Admin only action' },
+                { status: 403 }
+            );
+        }
 
         const { id } = await params;
         const classId = parseInt(id, 10);
@@ -92,12 +98,6 @@ export async function POST(
             return NextResponse.json<ApiResponse>(
                 { success: false, error: 'Class not found' },
                 { status: 404 }
-            );
-        }
-        if (classes[0].teacher_id !== session.id) {
-            return NextResponse.json<ApiResponse>(
-                { success: false, error: 'Forbidden for this class' },
-                { status: 403 }
             );
         }
 

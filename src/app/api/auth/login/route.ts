@@ -53,6 +53,7 @@ export async function POST(request: Request) {
             id: teacher.id,
             name: teacher.name,
             email: teacher.email,
+            role: teacher.role,
         });
 
         return NextResponse.json<ApiResponse<Teacher>>({

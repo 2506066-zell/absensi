@@ -1,9 +1,11 @@
 export type AttendanceStatus = 'hadir' | 'izin' | 'sakit' | 'alpha';
+export type UserRole = 'admin' | 'user';
 
 export interface Teacher {
   id: number;
   name: string;
   email: string;
+  role: UserRole;
   created_at: string;
 }
 
@@ -69,4 +71,5 @@ export interface SessionPayload {
   id: number;
   name: string;
   email: string;
+  role: UserRole;
 }

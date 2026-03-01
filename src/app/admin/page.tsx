@@ -103,16 +103,16 @@ export default function AdminPage() {
         fetchRecords();
     }, [fetchRecords]);
 
-    const ownClasses = useMemo(
-        () => (user ? classes.filter((cls) => cls.teacher_id === user.id) : []),
+    const manageableClasses = useMemo(
+        () => (user?.role === 'admin' ? classes : []),
         [classes, user]
     );
 
     useEffect(() => {
-        if (!studentClassId && ownClasses.length > 0) {
-            setStudentClassId(String(ownClasses[0].id));
+        if (!studentClassId && manageableClasses.length > 0) {
+            setStudentClassId(String(manageableClasses[0].id));
         }
-    }, [studentClassId, ownClasses]);
+    }, [studentClassId, manageableClasses]);
 
     useEffect(() => {
         void fetchClassStudents(studentClassId);
@@ -226,7 +226,8 @@ export default function AdminPage() {
 
             <main className="max-w-lg mx-auto px-4 py-4">
                 {/* Class & Student Management */}
-                <div className="bg-white border border-slate-100 rounded-2xl p-4 mb-4 shadow-sm space-y-4">
+                {user?.role === 'admin' ? (
+                    <div className="bg-white border border-slate-100 rounded-2xl p-4 mb-4 shadow-sm space-y-4">
                     <h2 className="text-sm font-bold text-slate-800">Tambah Data</h2>
 
                     <form onSubmit={handleAddClass} className="space-y-2">
@@ -263,10 +264,10 @@ export default function AdminPage() {
                                 value={studentClassId}
                                 onChange={(e) => setStudentClassId(e.target.value)}
                                 className="px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                disabled={ownClasses.length === 0}
+                                disabled={manageableClasses.length === 0}
                             >
                                 <option value="">Pilih kelas</option>
-                                {ownClasses.map((c) => (
+                                {manageableClasses.map((c) => (
                                     <option key={c.id} value={c.id}>
                                         {c.name}
                                     </option>
@@ -279,17 +280,17 @@ export default function AdminPage() {
                                 placeholder="Nama siswa"
                                 className="px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 maxLength={100}
-                                disabled={ownClasses.length === 0}
+                                disabled={manageableClasses.length === 0}
                             />
                             <button
                                 type="submit"
-                                disabled={addingStudent || ownClasses.length === 0}
+                                disabled={addingStudent || manageableClasses.length === 0}
                                 className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed"
                             >
                                 {addingStudent ? 'Menyimpan...' : 'Tambah'}
                             </button>
                         </div>
-                        {ownClasses.length === 0 && (
+                        {manageableClasses.length === 0 && (
                             <p className="text-xs text-slate-400">
                                 Buat kelas terlebih dahulu untuk menambahkan siswa.
                             </p>
@@ -326,7 +327,14 @@ export default function AdminPage() {
                             </div>
                         )}
                     </div>
-                </div>
+                    </div>
+                ) : (
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
+                        <p className="text-sm text-amber-700 font-medium">
+                            Halaman ini hanya untuk admin.
+                        </p>
+                    </div>
+                )}
 
                 {/* Filters */}
                 <div className="flex flex-col sm:flex-row gap-3 mb-4">
