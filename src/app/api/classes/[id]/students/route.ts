@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
-import { StudentWithAttendance, ApiResponse } from '@/types';
+import { getSession } from '@/features/auth/session';
+import { validateName, sanitizeString } from '@/lib/validation';
+import { Student, StudentWithAttendance, ApiResponse, Class } from '@/types';
 
 export async function GET(
     request: Request,
@@ -35,6 +37,94 @@ export async function GET(
         });
     } catch (error) {
         console.error('Students fetch error:', error);
+        return NextResponse.json<ApiResponse>(
+            { success: false, error: 'Internal server error' },
+            { status: 500 }
+        );
+    }
+}
+
+export async function POST(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const session = await getSession();
+        if (!session) {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Not authenticated' },
+                { status: 401 }
+            );
+        }
+
+        const { id } = await params;
+        const classId = parseInt(id, 10);
+        if (isNaN(classId) || classId <= 0) {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Invalid class ID' },
+                { status: 400 }
+            );
+        }
+
+        const body = await request.json();
+        const { name } = body as { name?: string };
+
+        if (!name) {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Student name is required' },
+                { status: 400 }
+            );
+        }
+
+        const cleanName = sanitizeString(name);
+        if (!validateName(cleanName)) {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Invalid student name (2-100 characters)' },
+                { status: 400 }
+            );
+        }
+
+        const classes = await query<Class>(
+            'SELECT id, teacher_id, name FROM classes WHERE id = $1',
+            [classId]
+        );
+        if (classes.length === 0) {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Class not found' },
+                { status: 404 }
+            );
+        }
+        if (classes[0].teacher_id !== session.id) {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Forbidden for this class' },
+                { status: 403 }
+            );
+        }
+
+        const existing = await query<Student>(
+            'SELECT id, name, class_id FROM students WHERE class_id = $1 AND LOWER(name) = LOWER($2) LIMIT 1',
+            [classId, cleanName]
+        );
+        if (existing.length > 0) {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Student already exists in this class' },
+                { status: 409 }
+            );
+        }
+
+        const created = await query<Student>(
+            `INSERT INTO students (name, class_id)
+       VALUES ($1, $2)
+       RETURNING id, name, class_id`,
+            [cleanName, classId]
+        );
+
+        return NextResponse.json<ApiResponse<Student>>({
+            success: true,
+            data: created[0],
+        });
+    } catch (error) {
+        console.error('Student create error:', error);
         return NextResponse.json<ApiResponse>(
             { success: false, error: 'Internal server error' },
             { status: 500 }

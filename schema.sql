@@ -42,4 +42,5 @@ CREATE INDEX IF NOT EXISTS idx_attendance_class_id ON attendance(class_id);
 CREATE INDEX IF NOT EXISTS idx_attendance_student_id ON attendance(student_id);
 CREATE INDEX IF NOT EXISTS idx_attendance_date_class ON attendance(date, class_id);
 CREATE INDEX IF NOT EXISTS idx_students_class_id ON students(class_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_students_class_name_unique ON students (class_id, LOWER(name));
 CREATE INDEX IF NOT EXISTS idx_classes_teacher_id ON classes(teacher_id);

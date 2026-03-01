@@ -7,7 +7,7 @@ const protectedPaths = ['/dashboard', '/attendance', '/admin'];
 const secretKey = process.env.JWT_SECRET || 'default-secret-change-me';
 const encodedKey = new TextEncoder().encode(secretKey);
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     const isProtected = protectedPaths.some((path) =>

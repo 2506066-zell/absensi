@@ -102,7 +102,9 @@ Visit `http://localhost:3000`
 | `POST` | `/api/auth/logout` | Clear session |
 | `GET` | `/api/auth/me` | Get current session |
 | `GET` | `/api/classes` | List all classes |
+| `POST` | `/api/classes` | Create a new class (authenticated) |
 | `GET` | `/api/classes/:id/students?date=` | Students by class + attendance |
+| `POST` | `/api/classes/:id/students` | Add student to class (authenticated) |
 | `POST` | `/api/attendance` | Bulk upsert attendance |
 | `GET` | `/api/attendance?date=&class_id=` | Query attendance |
 | `GET` | `/api/attendance/export?date=&class_id=` | Export CSV |
@@ -165,7 +167,7 @@ src/
 │   ├── api/offlineQueue.ts
 │   ├── db/index.ts
 │   └── validation/index.ts
-├── middleware.ts
+├── proxy.ts
 config/index.ts
 types/index.ts
 schema.sql
