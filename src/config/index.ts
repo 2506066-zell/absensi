@@ -52,3 +52,4 @@ export const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 export const DEFAULT_ADMIN_EMAIL = 'admin@smktarkid.id';
 export const DEFAULT_ADMIN_NAME = 'Admin';
+export const DEFAULT_USER_EMAIL = 'guru@smktarkid.id';

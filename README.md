@@ -109,17 +109,26 @@ Visit `http://localhost:3000`
 | `GET` | `/api/attendance?date=&class_id=` | Query attendance |
 | `GET` | `/api/attendance/export?date=&class_id=` | Export CSV |
 
-### Example: Login
+### Example: Login User (Nama Panjang)
 
 ```bash
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"name": "Admin", "email": "admin@smktarkid.id"}'
+  -d '{"mode": "user", "name": "Guru Kelas Satu"}'
+```
+
+### Example: Login Admin
+
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"mode": "admin", "name": "Admin", "email": "admin@smktarkid.id"}'
 ```
 
 Note:
+- User login uses full name (`Nama Panjang`, minimal 2 kata) and fixed email `guru@smktarkid.id`.
 - Only `admin` can create class and add student.
-- Seed default admin is `admin@smktarkid.id` (name: `Admin`).
+- Default admin is `admin@smktarkid.id` (name: `Admin`).
 - Attendance recap page (`/admin`) can be accessed by all logged-in users.
 - Class/student management page is `/admin/manage` (admin only).
 

@@ -3,12 +3,27 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/components/Toast';
+import { DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_NAME, DEFAULT_USER_EMAIL } from '@/config';
+
+type LoginMode = 'user' | 'admin';
 
 export default function LoginPage() {
+  const [mode, setMode] = useState<LoginMode>('user');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(DEFAULT_ADMIN_EMAIL);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  function handleModeChange(nextMode: LoginMode) {
+    setMode(nextMode);
+    if (nextMode === 'admin') {
+      setName(DEFAULT_ADMIN_NAME);
+      setEmail(DEFAULT_ADMIN_EMAIL);
+      return;
+    }
+    setName('');
+    setEmail('');
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -18,7 +33,11 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({
+          mode,
+          name,
+          email: mode === 'admin' ? email : '',
+        }),
       });
 
       const data = await res.json();
@@ -39,7 +58,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       <div className="w-full max-w-sm">
-        {/* Logo/Header */}
         <div className="text-center mb-8">
           <div className="w-20 h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-xl shadow-indigo-500/30">
             <svg
@@ -60,7 +78,27 @@ export default function LoginPage() {
           <p className="text-sm text-slate-500 mt-1">Sistem Absensi Siswa</p>
         </div>
 
-        {/* Login Form */}
+        <div className="grid grid-cols-2 gap-2 mb-4 p-1 bg-slate-100 rounded-xl">
+          <button
+            type="button"
+            onClick={() => handleModeChange('user')}
+            className={`py-2 rounded-lg text-sm font-semibold transition-colors ${
+              mode === 'user' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'
+            }`}
+          >
+            User
+          </button>
+          <button
+            type="button"
+            onClick={() => handleModeChange('admin')}
+            className={`py-2 rounded-lg text-sm font-semibold transition-colors ${
+              mode === 'admin' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'
+            }`}
+          >
+            Admin
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 space-y-4">
             <div>
@@ -68,7 +106,7 @@ export default function LoginPage() {
                 htmlFor="name"
                 className="block text-sm font-semibold text-slate-700 mb-1.5"
               >
-                Nama Lengkap
+                Nama Panjang
               </label>
               <input
                 id="name"
@@ -76,29 +114,36 @@ export default function LoginPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Masukkan nama lengkap"
+                placeholder="Contoh: Ahmad Maulana"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
-                aria-label="Full name"
+                aria-label="Nama panjang"
               />
             </div>
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-semibold text-slate-700 mb-1.5"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="contoh@sekolah.id"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
-                aria-label="Email address"
-              />
-            </div>
+
+            {mode === 'admin' ? (
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-semibold text-slate-700 mb-1.5"
+                >
+                  Email Admin
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={DEFAULT_ADMIN_EMAIL}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
+                  aria-label="Email admin"
+                />
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500">
+                Email user otomatis: <span className="font-semibold">{DEFAULT_USER_EMAIL}</span>
+              </p>
+            )}
           </div>
 
           <button
@@ -141,7 +186,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-xs text-slate-400 mt-6">
-          © 2026 Absensi App
+          (c) 2026 Absensi App
         </p>
       </div>
     </div>

@@ -11,6 +11,12 @@ export function validateName(name: string): boolean {
     return typeof name === 'string' && name.trim().length >= 2 && name.trim().length <= 100;
 }
 
+export function validateFullName(name: string): boolean {
+    if (!validateName(name)) return false;
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    return parts.length >= 2;
+}
+
 export function validateStatus(status: string): status is AttendanceStatus {
     return VALID_STATUSES.includes(status as AttendanceStatus);
 }
