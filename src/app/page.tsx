@@ -1,29 +1,16 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/components/Toast';
-import { DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_NAME, DEFAULT_USER_EMAIL } from '@/config';
-
-type LoginMode = 'user' | 'admin';
+import { DEFAULT_USER_EMAIL } from '@/config';
 
 export default function LoginPage() {
-  const [mode, setMode] = useState<LoginMode>('user');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState(DEFAULT_ADMIN_EMAIL);
+  const [email, setEmail] = useState(DEFAULT_USER_EMAIL);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
-  function handleModeChange(nextMode: LoginMode) {
-    setMode(nextMode);
-    if (nextMode === 'admin') {
-      setName(DEFAULT_ADMIN_NAME);
-      setEmail(DEFAULT_ADMIN_EMAIL);
-      return;
-    }
-    setName('');
-    setEmail('');
-  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -33,11 +20,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode,
-          name,
-          email: mode === 'admin' ? email : '',
-        }),
+        body: JSON.stringify({ name, email }),
       });
 
       const data = await res.json();
@@ -59,44 +42,18 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-xl shadow-indigo-500/30">
-            <svg
-              className="w-10 h-10 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-              />
-            </svg>
+          <div className="w-28 h-28 mx-auto mb-4 rounded-3xl bg-white flex items-center justify-center shadow-xl shadow-indigo-200/50 border border-slate-100 p-3">
+            <Image
+              src="/icons/logo-smk.jpeg"
+              alt="Logo SMK Muhammadiyah Tarogong Kidul"
+              width={88}
+              height={88}
+              className="w-full h-full object-contain"
+              priority
+            />
           </div>
           <h1 className="text-2xl font-bold text-slate-800">Absensi</h1>
           <p className="text-sm text-slate-500 mt-1">Sistem Absensi Siswa</p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 mb-4 p-1 bg-slate-100 rounded-xl">
-          <button
-            type="button"
-            onClick={() => handleModeChange('user')}
-            className={`py-2 rounded-lg text-sm font-semibold transition-colors ${
-              mode === 'user' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'
-            }`}
-          >
-            User
-          </button>
-          <button
-            type="button"
-            onClick={() => handleModeChange('admin')}
-            className={`py-2 rounded-lg text-sm font-semibold transition-colors ${
-              mode === 'admin' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'
-            }`}
-          >
-            Admin
-          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -114,36 +71,33 @@ export default function LoginPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Contoh: Ahmad Maulana"
+                placeholder="Contoh: Guru Kelas Satu"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
                 aria-label="Nama panjang"
               />
             </div>
 
-            {mode === 'admin' ? (
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-semibold text-slate-700 mb-1.5"
-                >
-                  Email Admin
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={DEFAULT_ADMIN_EMAIL}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
-                  aria-label="Email admin"
-                />
-              </div>
-            ) : (
-              <p className="text-xs text-slate-500">
-                Email user otomatis: <span className="font-semibold">{DEFAULT_USER_EMAIL}</span>
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-semibold text-slate-700 mb-1.5"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={DEFAULT_USER_EMAIL}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
+                aria-label="Email"
+              />
+              <p className="text-[11px] text-slate-400 mt-1.5">
+                Default user: {DEFAULT_USER_EMAIL}. Untuk admin gunakan admin@smktarkid.id dengan nama Admin.
               </p>
-            )}
+            </div>
           </div>
 
           <button

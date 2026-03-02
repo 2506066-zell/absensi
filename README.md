@@ -109,12 +109,12 @@ Visit `http://localhost:3000`
 | `GET` | `/api/attendance?date=&class_id=` | Query attendance |
 | `GET` | `/api/attendance/export?date=&class_id=` | Export CSV |
 
-### Example: Login User (Nama Panjang)
+### Example: Login User (Nama Panjang + Email Default)
 
 ```bash
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"mode": "user", "name": "Guru Kelas Satu"}'
+  -d '{"name": "Guru Kelas Satu", "email": "guru@smktarkid.id"}'
 ```
 
 ### Example: Login Admin
@@ -122,7 +122,7 @@ curl -X POST http://localhost:3000/api/auth/login \
 ```bash
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"mode": "admin", "name": "Admin", "email": "admin@smktarkid.id"}'
+  -d '{"name": "Admin", "email": "admin@smktarkid.id"}'
 ```
 
 Note:
