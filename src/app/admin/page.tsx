@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { showToast } from '@/components/Toast';
-import { Class, AttendanceStatus, SessionPayload } from '@/types';
+import { Class, AttendanceStatus, SessionPayload, StudentAttendanceSummary } from '@/types';
 import { STATUS_OPTIONS } from '@/config';
 
 interface AttendanceRow {
@@ -21,9 +21,13 @@ interface AttendanceRow {
 
 export default function AdminPage() {
     const [records, setRecords] = useState<AttendanceRow[]>([]);
+    const [studentSummary, setStudentSummary] = useState<StudentAttendanceSummary[]>([]);
     const [classes, setClasses] = useState<Class[]>([]);
     const [user, setUser] = useState<SessionPayload | null>(null);
     const [loading, setLoading] = useState(true);
+    const [loadingSummary, setLoadingSummary] = useState(true);
+    const [summaryPeriod, setSummaryPeriod] = useState<'weekly' | 'monthly'>('weekly');
+    const [summaryRange, setSummaryRange] = useState('');
     const [filterDate, setFilterDate] = useState(
         () => new Date().toISOString().split('T')[0]
     );
@@ -67,6 +71,32 @@ export default function AdminPage() {
         }
     }, []);
 
+    const fetchStudentSummary = useCallback(async () => {
+        setLoadingSummary(true);
+        try {
+            const params = new URLSearchParams();
+            params.set('date', filterDate);
+            params.set('period', summaryPeriod);
+            if (filterClass) params.set('class_id', filterClass);
+
+            const res = await fetch(`/api/attendance/student-summary?${params.toString()}`);
+            const data = await res.json();
+
+            if (data.success) {
+                setStudentSummary(data.data.rows);
+                setSummaryRange(`${data.data.period_start} s/d ${data.data.period_end}`);
+            } else {
+                setStudentSummary([]);
+                setSummaryRange('');
+            }
+        } catch {
+            setStudentSummary([]);
+            setSummaryRange('');
+        } finally {
+            setLoadingSummary(false);
+        }
+    }, [filterClass, filterDate, summaryPeriod]);
+
     useEffect(() => {
         fetchClasses();
         fetchCurrentUser();
@@ -75,6 +105,10 @@ export default function AdminPage() {
     useEffect(() => {
         fetchRecords();
     }, [fetchRecords]);
+
+    useEffect(() => {
+        fetchStudentSummary();
+    }, [fetchStudentSummary]);
 
     function getSummary() {
         const summary = { hadir: 0, izin: 0, sakit: 0, alpha: 0, total: records.length };
@@ -176,6 +210,59 @@ export default function AdminPage() {
                     </svg>
                     Export CSV
                 </button>
+
+                {/* Student Summary */}
+                <div className="bg-white border border-slate-100 rounded-2xl p-4 mb-4 shadow-sm">
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-800">Rekap per Siswa</h3>
+                            {summaryRange && (
+                                <p className="text-xs text-slate-400 mt-0.5">{summaryRange}</p>
+                            )}
+                        </div>
+                        <select
+                            value={summaryPeriod}
+                            onChange={(e) => setSummaryPeriod(e.target.value as 'weekly' | 'monthly')}
+                            className="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            aria-label="Summary period"
+                        >
+                            <option value="weekly">Mingguan</option>
+                            <option value="monthly">Bulanan</option>
+                        </select>
+                    </div>
+
+                    {loadingSummary ? (
+                        <div className="space-y-2">
+                            {Array.from({ length: 3 }).map((_, i) => (
+                                <div key={i} className="h-10 rounded-lg bg-slate-100 animate-pulse" />
+                            ))}
+                        </div>
+                    ) : studentSummary.length === 0 ? (
+                        <p className="text-sm text-slate-400">Belum ada data rekap per siswa.</p>
+                    ) : (
+                        <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                            {studentSummary.map((row) => (
+                                <div key={row.student_id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-800">{row.student_name}</p>
+                                            <p className="text-xs text-slate-400">{row.class_name}</p>
+                                        </div>
+                                        <p className="text-xs text-slate-500">
+                                            Total: <span className="font-semibold text-slate-700">{row.total_recorded}</span>
+                                        </p>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-1.5 mt-2">
+                                        <div className="rounded-lg bg-emerald-50 text-emerald-700 text-center py-1 text-xs font-semibold">H {row.hadir}</div>
+                                        <div className="rounded-lg bg-amber-50 text-amber-700 text-center py-1 text-xs font-semibold">I {row.izin}</div>
+                                        <div className="rounded-lg bg-blue-50 text-blue-700 text-center py-1 text-xs font-semibold">S {row.sakit}</div>
+                                        <div className="rounded-lg bg-rose-50 text-rose-700 text-center py-1 text-xs font-semibold">A {row.alpha}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 {/* Records Table */}
                 {loading ? (

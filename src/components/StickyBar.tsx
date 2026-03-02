@@ -5,6 +5,7 @@ interface StickyBarProps {
     loading: boolean;
     disabled?: boolean;
     count?: number;
+    total?: number;
 }
 
 export default function StickyBar({
@@ -12,12 +13,14 @@ export default function StickyBar({
     loading,
     disabled = false,
     count = 0,
+    total = 0,
 }: StickyBarProps) {
     return (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-xl border-t border-slate-200/50 px-4 py-3 safe-area-bottom">
             <div className="max-w-lg mx-auto flex items-center justify-between gap-4">
                 <p className="text-sm text-slate-500">
-                    <span className="font-semibold text-slate-700">{count}</span> siswa
+                    <span className="font-semibold text-slate-700">{count}</span>
+                    {total > 0 && <span>/{total}</span>} siswa
                 </p>
                 <button
                     onClick={onSave}

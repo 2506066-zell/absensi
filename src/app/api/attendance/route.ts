@@ -24,6 +24,52 @@ export async function POST(request: Request) {
             );
         }
 
+        // Enforce full-class attendance submission for one class and one date.
+        const first = records[0];
+        const mixedClass = records.some((r) => r.class_id !== first.class_id);
+        const mixedDate = records.some((r) => r.date !== first.date);
+        if (mixedClass || mixedDate) {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Attendance must be submitted for one class and one date only' },
+                { status: 400 }
+            );
+        }
+
+        const uniqueStudentIds = new Set(records.map((r) => r.student_id));
+        if (uniqueStudentIds.size !== records.length) {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Duplicate student entries found' },
+                { status: 400 }
+            );
+        }
+
+        const studentsInClass = await query<{ id: number }>(
+            'SELECT id FROM students WHERE class_id = $1 ORDER BY id',
+            [first.class_id]
+        );
+        if (studentsInClass.length === 0) {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Class has no students' },
+                { status: 400 }
+            );
+        }
+
+        const expectedIds = new Set(studentsInClass.map((s) => s.id));
+        const hasUnknownStudent = records.some((r) => !expectedIds.has(r.student_id));
+        if (hasUnknownStudent) {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Some students do not belong to this class' },
+                { status: 400 }
+            );
+        }
+
+        if (expectedIds.size !== uniqueStudentIds.size) {
+            return NextResponse.json<ApiResponse>(
+                { success: false, error: 'Attendance belum lengkap, isi semua siswa terlebih dahulu' },
+                { status: 400 }
+            );
+        }
+
         // Bulk upsert attendance records
         const results: AttendanceRecord[] = [];
         for (const record of records) {

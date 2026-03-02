@@ -61,6 +61,37 @@ export interface AttendanceExportRow {
   teacher_name: string;
 }
 
+export interface StudentAttendanceSummary {
+  student_id: number;
+  student_name: string;
+  class_id: number;
+  class_name: string;
+  hadir: number;
+  izin: number;
+  sakit: number;
+  alpha: number;
+  total_recorded: number;
+}
+
+export interface BackupPayload {
+  generated_at: string;
+  generated_by: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  counts: {
+    teachers: number;
+    classes: number;
+    students: number;
+    attendance: number;
+  };
+  teachers: Teacher[];
+  classes: Class[];
+  students: Student[];
+  attendance: AttendanceRecord[];
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;

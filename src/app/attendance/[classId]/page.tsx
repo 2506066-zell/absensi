@@ -76,19 +76,23 @@ export default function AttendancePage() {
     }
 
     async function handleSave() {
-        const records = students
-            .filter((s) => s.status)
-            .map((s) => ({
-                student_id: s.id,
-                class_id: classId,
-                status: s.status!,
-                date,
-            }));
-
-        if (records.length === 0) {
-            showToast('Pilih status absensi untuk minimal 1 siswa', 'error');
+        if (students.length === 0) {
+            showToast('Tidak ada siswa di kelas ini', 'error');
             return;
         }
+
+        const unmarked = students.filter((s) => !s.status);
+        if (unmarked.length > 0) {
+            showToast(`Absensi belum lengkap, ${unmarked.length} siswa belum dipilih`, 'error');
+            return;
+        }
+
+        const records = students.map((s) => ({
+            student_id: s.id,
+            class_id: classId,
+            status: s.status as AttendanceStatus,
+            date,
+        }));
 
         setSaving(true);
 
@@ -125,6 +129,7 @@ export default function AttendancePage() {
     }
 
     const markedCount = students.filter((s) => s.status).length;
+    const totalStudents = students.length;
 
     return (
         <div className="min-h-screen bg-slate-50 pb-24">
@@ -202,7 +207,8 @@ export default function AttendancePage() {
                 onSave={handleSave}
                 loading={saving}
                 count={markedCount}
-                disabled={markedCount === 0}
+                total={totalStudents}
+                disabled={totalStudents === 0 || markedCount !== totalStudents}
             />
         </div>
     );
