@@ -42,13 +42,13 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-28 h-28 mx-auto mb-4 rounded-3xl bg-white flex items-center justify-center shadow-xl shadow-indigo-200/50 border border-slate-100 p-3">
+          <div className="w-28 h-28 mx-auto mb-4 flex items-center justify-center">
             <Image
-              src="/icons/logo-smk.jpeg"
+              src="/icons/logo_smk-removebg-preview.png"
               alt="Logo SMK Muhammadiyah Tarogong Kidul"
-              width={88}
-              height={88}
-              className="w-full h-full object-contain"
+              width={112}
+              height={112}
+              className="w-28 h-28 object-contain"
               priority
             />
           </div>
@@ -71,8 +71,7 @@ export default function LoginPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Contoh: Guru Kelas Satu"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
                 aria-label="Nama panjang"
               />
             </div>
@@ -90,13 +89,9 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={DEFAULT_USER_EMAIL}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm"
                 aria-label="Email"
               />
-              <p className="text-[11px] text-slate-400 mt-1.5">
-                Default user: {DEFAULT_USER_EMAIL}. Untuk admin gunakan admin@smktarkid.id dengan nama Admin.
-              </p>
             </div>
           </div>
 
