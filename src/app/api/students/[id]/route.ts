@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/features/auth/session';
 import { query } from '@/lib/db';
+import { writeAuditLog } from '@/lib/audit';
 import { sanitizeString, validateName } from '@/lib/validation';
-import { ApiResponse, Student } from '@/types';
+import { ApiResponse, SessionPayload, Student } from '@/types';
 
-async function requireAdmin() {
+async function requireAdmin(): Promise<SessionPayload | NextResponse<ApiResponse>> {
     const session = await getSession();
     if (!session) {
         return NextResponse.json<ApiResponse>(
@@ -18,7 +19,7 @@ async function requireAdmin() {
             { status: 403 }
         );
     }
-    return null;
+    return session;
 }
 
 export async function PATCH(
@@ -26,8 +27,9 @@ export async function PATCH(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const denied = await requireAdmin();
-        if (denied) return denied;
+        const auth = await requireAdmin();
+        if (auth instanceof NextResponse) return auth;
+        const session = auth;
 
         const { id } = await params;
         const studentId = parseInt(id, 10);
@@ -74,6 +76,18 @@ export async function PATCH(
             [cleanName, studentId]
         );
 
+        await writeAuditLog({
+            actor: session,
+            action: 'student.update',
+            entity_type: 'student',
+            entity_id: studentId,
+            details: {
+                class_id: existing[0].class_id,
+                old_name: existing[0].name,
+                new_name: updated[0].name,
+            },
+        });
+
         return NextResponse.json<ApiResponse<Student>>({
             success: true,
             data: updated[0],
@@ -92,8 +106,9 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const denied = await requireAdmin();
-        if (denied) return denied;
+        const auth = await requireAdmin();
+        if (auth instanceof NextResponse) return auth;
+        const session = auth;
 
         const { id } = await params;
         const studentId = parseInt(id, 10);
@@ -114,6 +129,17 @@ export async function DELETE(
                 { status: 404 }
             );
         }
+
+        await writeAuditLog({
+            actor: session,
+            action: 'student.delete',
+            entity_type: 'student',
+            entity_id: studentId,
+            details: {
+                class_id: deleted[0].class_id,
+                student_name: deleted[0].name,
+            },
+        });
 
         return NextResponse.json<ApiResponse<Student>>({
             success: true,

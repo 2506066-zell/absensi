@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { createSession } from '@/features/auth/session';
+import { writeAuditLog } from '@/lib/audit';
 import { validateEmail, validateFullName, sanitizeString } from '@/lib/validation';
 import { DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_NAME, DEFAULT_USER_EMAIL } from '@/config';
 import { Teacher, ApiResponse } from '@/types';
@@ -112,6 +113,16 @@ export async function POST(request: Request) {
             name: teacher.name,
             email: teacher.email,
             role: teacher.role,
+        });
+
+        await writeAuditLog({
+            actor: teacher,
+            action: 'auth.login',
+            entity_type: 'teacher',
+            entity_id: teacher.id,
+            details: {
+                role: teacher.role,
+            },
         });
 
         return NextResponse.json<ApiResponse<Teacher>>({

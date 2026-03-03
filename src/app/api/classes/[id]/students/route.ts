@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { getSession } from '@/features/auth/session';
+import { writeAuditLog } from '@/lib/audit';
 import { validateName, sanitizeString } from '@/lib/validation';
 import { Student, StudentWithAttendance, ApiResponse, Class } from '@/types';
 
@@ -118,6 +119,18 @@ export async function POST(
        RETURNING id, name, class_id`,
             [cleanName, classId]
         );
+
+        await writeAuditLog({
+            actor: session,
+            action: 'student.create',
+            entity_type: 'student',
+            entity_id: created[0].id,
+            details: {
+                student_name: created[0].name,
+                class_id: classId,
+                class_name: classes[0].name,
+            },
+        });
 
         return NextResponse.json<ApiResponse<Student>>({
             success: true,

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/features/auth/session';
 import { query } from '@/lib/db';
+import { writeAuditLog } from '@/lib/audit';
 import {
     ApiResponse,
     AttendanceRecord,
@@ -55,6 +56,18 @@ export async function GET() {
             students,
             attendance,
         };
+
+        await writeAuditLog({
+            actor: session,
+            action: 'backup.export',
+            entity_type: 'system',
+            details: {
+                teachers: teachers.length,
+                classes: classes.length,
+                students: students.length,
+                attendance: attendance.length,
+            },
+        });
 
         return new NextResponse(JSON.stringify(payload, null, 2), {
             headers: {

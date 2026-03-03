@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/features/auth/session';
 import { query } from '@/lib/db';
+import { writeAuditLog } from '@/lib/audit';
 import { sanitizeString, validateName } from '@/lib/validation';
-import { ApiResponse, Class } from '@/types';
+import { ApiResponse, Class, SessionPayload } from '@/types';
 
-async function requireAdmin() {
+async function requireAdmin(): Promise<SessionPayload | NextResponse<ApiResponse>> {
     const session = await getSession();
     if (!session) {
         return NextResponse.json<ApiResponse>(
@@ -18,7 +19,7 @@ async function requireAdmin() {
             { status: 403 }
         );
     }
-    return null;
+    return session;
 }
 
 export async function PATCH(
@@ -26,8 +27,9 @@ export async function PATCH(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const denied = await requireAdmin();
-        if (denied) return denied;
+        const auth = await requireAdmin();
+        if (auth instanceof NextResponse) return auth;
+        const session = auth;
 
         const { id } = await params;
         const classId = parseInt(id, 10);
@@ -74,6 +76,17 @@ export async function PATCH(
             [cleanName, classId]
         );
 
+        await writeAuditLog({
+            actor: session,
+            action: 'class.update',
+            entity_type: 'class',
+            entity_id: classId,
+            details: {
+                old_name: exists[0].name,
+                new_name: updated[0].name,
+            },
+        });
+
         return NextResponse.json<ApiResponse<Class>>({
             success: true,
             data: updated[0],
@@ -92,8 +105,9 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const denied = await requireAdmin();
-        if (denied) return denied;
+        const auth = await requireAdmin();
+        if (auth instanceof NextResponse) return auth;
+        const session = auth;
 
         const { id } = await params;
         const classId = parseInt(id, 10);
@@ -114,6 +128,16 @@ export async function DELETE(
                 { status: 404 }
             );
         }
+
+        await writeAuditLog({
+            actor: session,
+            action: 'class.delete',
+            entity_type: 'class',
+            entity_id: classId,
+            details: {
+                class_name: deleted[0].name,
+            },
+        });
 
         return NextResponse.json<ApiResponse<Class>>({
             success: true,

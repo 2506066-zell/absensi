@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { getSession } from '@/features/auth/session';
+import { writeAuditLog } from '@/lib/audit';
 import { validateAttendancePayload } from '@/lib/validation';
 import { AttendanceRecord, AttendancePayload, ApiResponse } from '@/types';
 
@@ -83,6 +84,23 @@ export async function POST(request: Request) {
             );
             results.push(upserted[0]);
         }
+
+        const statusCounts = records.reduce<Record<string, number>>((acc, record) => {
+            acc[record.status] = (acc[record.status] || 0) + 1;
+            return acc;
+        }, {});
+
+        await writeAuditLog({
+            actor: session,
+            action: 'attendance.submit',
+            entity_type: 'class',
+            entity_id: first.class_id,
+            details: {
+                date: first.date,
+                total_students: records.length,
+                status_counts: statusCounts,
+            },
+        });
 
         return NextResponse.json<ApiResponse<AttendanceRecord[]>>({
             success: true,

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/features/auth/session';
 import { query } from '@/lib/db';
+import { writeAuditLog } from '@/lib/audit';
 import { sanitizeString, validateName } from '@/lib/validation';
-import { ApiResponse, Class, Student } from '@/types';
+import { ApiResponse, Class, SessionPayload, Student } from '@/types';
 import * as XLSX from 'xlsx';
 
 interface ImportResult {
@@ -12,7 +13,7 @@ interface ImportResult {
     total_rows: number;
 }
 
-async function requireAdmin() {
+async function requireAdmin(): Promise<SessionPayload | NextResponse<ApiResponse>> {
     const session = await getSession();
     if (!session) {
         return NextResponse.json<ApiResponse>(
@@ -26,7 +27,7 @@ async function requireAdmin() {
             { status: 403 }
         );
     }
-    return null;
+    return session;
 }
 
 export async function POST(
@@ -34,8 +35,9 @@ export async function POST(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const denied = await requireAdmin();
-        if (denied) return denied;
+        const auth = await requireAdmin();
+        if (auth instanceof NextResponse) return auth;
+        const session = auth;
 
         const { id } = await params;
         const classId = parseInt(id, 10);
@@ -149,6 +151,21 @@ export async function POST(
             invalid_rows: invalidRows,
             total_rows: rows.length,
         };
+
+        await writeAuditLog({
+            actor: session,
+            action: 'student.import',
+            entity_type: 'class',
+            entity_id: classId,
+            details: {
+                class_name: cls[0].name,
+                file_name: file.name,
+                inserted: result.inserted,
+                skipped: result.skipped,
+                invalid_rows: result.invalid_rows,
+                total_rows: result.total_rows,
+            },
+        });
 
         return NextResponse.json<ApiResponse<ImportResult>>({
             success: true,
